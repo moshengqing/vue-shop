@@ -7,52 +7,34 @@
       </el-header>
       <el-container>
         <el-aside width="300px">
-          Aside
-          <el-col :span="12">
+          <el-col>
             <el-menu
-              default-active="2"
+              default-active=""
               class="el-menu-vertical-demo"
               background-color="#545c64"
               text-color="#fff"
               active-text-color="#ffd04b"
+              :router="true"
+              
             >
-              <el-submenu index="1">
+            <!-- 一级菜单循环 -->
+              <el-submenu   :index="item.id+''" v-for="item in menuList" :key="item.id">
                 <template slot="title">
-                  <i class="el-icon-location"></i>
-                  <span>导航一</span>
+                  <i :class="iconObj[item.id]"></i>
+                  <span>{{item.authName}}</span>
                 </template>
-                <el-menu-item-group>
-                  <template slot="title">分组一</template>
-                  <el-menu-item index="1-1">选项1</el-menu-item>
-                  <el-menu-item index="1-2">选项2</el-menu-item>
-                </el-menu-item-group>
-                <el-menu-item-group title="分组2">
-                  <el-menu-item index="1-3">选项3</el-menu-item>
-                </el-menu-item-group>
-                <el-submenu index="1-4">
-                  <template slot="title">选项4</template>
-                  <el-menu-item index="1-4-1">选项1</el-menu-item>
-                </el-submenu>
+                 <!--二级菜单循环 -->
+                <el-menu-item  :index="subItem.path+''" v-for="subItem in item.children" :key="subItem.id">{{subItem.authName}}</el-menu-item>
               </el-submenu>
-              <el-menu-item index="2">
-                <i class="el-icon-menu"></i>
-                <span slot="title">导航二</span>
-              </el-menu-item>
-              <el-menu-item index="3" disabled>
-                <i class="el-icon-document"></i>
-                <span slot="title">导航三</span>
-              </el-menu-item>
-              <el-menu-item index="4">
-                <i class="el-icon-setting"></i>
-                <span slot="title">导航四</span>
-              </el-menu-item>
+             
             </el-menu>
           </el-col>
         </el-aside>
-        <el-main>Main</el-main>
+        <el-main>
+            <router-view></router-view>
+        </el-main>
       </el-container>
     </el-container>
-    <h1>我是主页</h1>
     <div></div>
   </div>
 </template>
@@ -60,25 +42,50 @@
 <script>
 export default {
   data() {
-    return {};
+    return {
+        //侧边栏菜单
+        menuList:[],
+        // 图标对象
+        iconObj:{
+            125:'el-icon-s-custom',
+            103:'el-icon-unlock',
+            101:'el-icon-goods',
+            102:'el-icon-s-management',
+            145:'el-icon-setting'
+        }
+    };
   },
   methods: {
     loginOut() {
       window.sessionStorage.clear();
       this.$router.push("/login");
+    },
+    async getMenuList(){
+       let {data:res} = await this.$http.get('menus');
+    //    console.log(res.data)
+       if(res.meta.status !=200) return this.$message({type:'error',message:'获取数据失败'});; 
+       this.menuList = res.data;
+    //    console.log(res.data)
+      
+       
     }
-  }
+  },
+  created() {
+      this.getMenuList();
+  },
 };
 </script>
 
 <style lang="" scoped>
 .el-header {
   height: 60px;
-  background-color: #2b4b6b;
+  background-color: rgb(84, 92, 100);
   color: #fff;
   /* text-align: center; */
   line-height: 60px;
   position: relative;
+  font-size: 20px;
+  font-weight: 700;
 }
 .el-button {
   position: absolute;
@@ -86,8 +93,9 @@ export default {
   top: 10px;
 }
 .el-aside {
-  background-color: bisque;
-  /* height: 100%; */
+  background-color: rgb(84, 92, 100);
+  min-height: 600px;
+  height: 100%;
 }
 .home_box {
   height: 100%;

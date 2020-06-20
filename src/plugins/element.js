@@ -1,5 +1,5 @@
 import Vue from 'vue';
 
-import {Button,Message} from 'element-ui'
+import {Button} from 'element-ui'
 Vue.use(Button)
 Vue.use(Message)
