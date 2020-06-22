@@ -1,6 +1,6 @@
 <template lang="">
     <div>
-        <h2>Welcome</h2>
+        <h2>Roles</h2>
     </div>
 </template>
 

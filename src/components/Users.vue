@@ -1,7 +1,7 @@
 <template lang="">
     <div>
     <el-breadcrumb separator-class="el-icon-arrow-right">
-        <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+        <el-breadcrumb-item :to="{ path: '/users' }">首页</el-breadcrumb-item>
         <el-breadcrumb-item>用户管理</el-breadcrumb-item>
         <el-breadcrumb-item>用户列表</el-breadcrumb-item>
     </el-breadcrumb>
@@ -82,12 +82,12 @@
         label="操作">
         <template slot-scope='scope'>
              <div>
-                 <el-tooltip :enterable="false" class="item" effect="dark" content="编辑" placement="top">
-                     <el-button type="primary" icon="el-icon-edit" size='mini' circle></el-button>
+                 <el-tooltip :enterable="false"  class="item" effect="dark" content="编辑" placement="top">
+                     <el-button type="primary" @click="editShow(scope.row.id)" icon="el-icon-edit" size='mini' circle></el-button>
                  </el-tooltip>
                  
                  <el-tooltip :enterable="false" class="item" effect="dark" content="删除" placement="top">
-                     <el-button type="danger" icon="el-icon-delete" size='mini' circle></el-button>
+                     <el-button @click="deleteUser(scope.row.id)" type="danger" icon="el-icon-delete" size='mini' circle></el-button>
                  </el-tooltip>
                  <el-tooltip :enterable="false" class="item" effect="dark" content="分配权限" placement="top">
                      <el-button type="primary" icon="el-icon-setting" size='mini' circle></el-button>
@@ -97,6 +97,30 @@
         </template>
       </el-table-column>
     </el-table>
+   <!-- 编辑区域 -->
+  <el-dialog
+  title="提示"
+  :visible.sync="centerDialogVisible"
+  width="30%"
+  center>
+  
+  <el-form :model="editForm" :rules="editRules" ref="ruleForm" label-width="100px" class="demo-ruleForm">
+       <el-form-item label="用户名" prop="username">
+          <el-input disabled v-model="editForm.username"></el-input>
+       </el-form-item>
+       <el-form-item label="邮件" prop="email">
+          <el-input v-model="editForm.email"></el-input>
+       </el-form-item>
+       <el-form-item label="手机号" prop="mobile">
+          <el-input v-model="editForm.mobile"></el-input>
+       </el-form-item>
+    </el-form>
+
+
+    <el-button @click="centerDialogVisible = false">取 消</el-button>
+    <el-button type="primary" @click="editUser">确 定</el-button>
+  </span>
+</el-dialog>
   <!-- 分页功能 -->
 <el-pagination
       @size-change="handleSizeChange"
@@ -161,7 +185,23 @@ export default {
             { required: true, message: '请输入手机号', trigger: 'blur' },
             { validator:check,trigger:'blur'}
           ],
-      }
+      },
+      centerDialogVisible:false,
+      editForm:{},
+      editRules:{
+          username: [
+            { required: true, message: '请输入用户名', trigger: 'blur' },
+            { min: 4, max: 9, message: '长度在 4 到 9 个字符', trigger: 'blur' }
+          ],
+          email: [
+            { required: true, message: '请输入邮件', trigger: 'blur' },
+            
+          ],
+           mobile: [
+            { required: true, message: '请输入手机号', trigger: 'blur' },
+            { validator:check,trigger:'blur'}
+          ],
+      },
     };
   },
   methods: {
@@ -222,10 +262,61 @@ export default {
             this.$message({ type: "succuse", message: res.meta.msg });
             this.dialogVisible = false;
             this.addForm = {}
+            this.getUsersList();
             
         })
-    }
-  
+    },
+    //显示修改区域
+    async editShow(id){
+      this.centerDialogVisible= true
+      let {data:res} = await this.$http.get(`users/${id}`);
+      console.log(res)
+      if(res.meta.status !==200) return this.$message({ type: "error", message: "获取数据失败" });
+      this.editForm = res.data;
+    },
+    //编辑用户
+    editUser(){
+      this.$refs.ruleForm.validate(async valid=>{
+        if(!valid) return;
+        const {data:res} = await this.$http.put(`users/${this.editForm.id}`,{
+        email:this.editForm.email,
+        mobile:this.editForm.mobile
+        })
+        if(res.meta.status !==200){
+          return this.$message({ type: "error", message: "更新失败" });
+        }
+        this.$message({ type: "succese", message: "更新成功" });
+        this.centerDialogVisible = false;
+
+        this.getUsersList();
+      })
+    },
+    //删除用户
+    async deleteUser(id){
+       const result= await this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).catch(err=>err);
+        console.log(result)
+        if(result ==='cancel'){
+          return this.$message({ type: "succese", message: "取消删除" });
+        }
+        else if(result ==='confirm'){
+          // 发送删除请求
+           const {data:res}  = await this.$http.delete(`users/${id}`);
+           console.log(res)
+           if(res.meta.status !==200){
+               return this.$message({ type: "error", message: "删除失败" });
+            }
+          this.$message({ type: "succese", message: "删除成功" });
+          this.queryInfo.pagenum = 1 ;
+          this.getUsersList();    
+          
+           
+        }
+
+      } 
   },
   created() {
     this.getUsersList();

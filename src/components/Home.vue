@@ -9,16 +9,16 @@
         <el-aside width="300px">
           <el-col>
             <el-menu
-              default-active=""
+              default-active="1"
               class="el-menu-vertical-demo"
               background-color="#545c64"
               text-color="#fff"
               active-text-color="#ffd04b"
               :router="true"
-              
+              :unique-opened="true"
             >
             <!-- 一级菜单循环 -->
-              <el-submenu   :index="item.id+''" v-for="item in menuList" :key="item.id">
+              <el-submenu  :index="item.id+''" v-for="item in menuList" :key="item.id">
                 <template slot="title">
                   <i :class="iconObj[item.id]"></i>
                   <span>{{item.authName}}</span>
