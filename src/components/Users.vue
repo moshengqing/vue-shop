@@ -46,14 +46,9 @@
 </el-dialog>
 
            <!-- 用户列表区域 -->
-            <el-table
-      :data="UsersList"
-      style="width: 100%">
-      <el-table-column
-        type="index"
-        width="50">
-      </el-table-column>
-      <el-table-column
+            <el-table :data="UsersList" style="width: 100%">
+                <el-table-column type="index" width="50"></el-table-column>
+                <el-table-column
         prop="username"
         label="姓名"
         width="180">
